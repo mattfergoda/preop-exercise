@@ -88,6 +88,12 @@ This avoids silently running a non-agentic path when the expected submission beh
 
 Every issue includes a concrete source path and details containing source values, dates, or document excerpts. This makes outputs inspectable and aligns with the assignment requirement that every issue cite exact evidence.
 
+### Typed Agent Output And Validation
+
+The document extraction agent returns a typed `DocumentFacts` object through the Agents SDK structured-output path. The result is validated with Pydantic before deterministic policy code consumes it.
+
+This prevents malformed or free-form agent responses from leaking into final decisions. If agent output is invalid, the system falls back to deterministic document extraction rather than producing a partially trusted result.
+
 ## Assumptions
 
 - Date windows are inclusive: within 30 days means `<= 30` calendar days, and within 14 days means `<= 14` calendar days.
@@ -175,7 +181,7 @@ The determinism report shows 100% decision stability, 100% JSON-format stability
 
 ## Reflection
 
-The central engineering tradeoff was how much authority to give the LLM. A pure LLM solution would be simpler, but it would make policy enforcement and determinism harder. A pure rules solution would be highly repeatable, but it would underuse the agentic harness and be brittle for nuanced free-text documents.
+The central engineering tradeoff was how much authority to give the LLM. A pure LLM solution would be simpler, but it would make policy enforcement and determinism harder. A pure rules solution would be highly repeatable, but it would make nuanced free-text interpretation and evidence extraction brittle, especially for ambiguous consent language, H&P variants, and incomplete anticoagulation plans.
 
 The chosen approach uses the OpenAI Agents SDK for the unstructured extraction problem and deterministic code for the explicit policy problem. This keeps the system agentic where the input is ambiguous and deterministic where the requirements are strict.
 
