@@ -14,8 +14,8 @@ The assignment asks for a system that determines whether a patient can be schedu
 
 - Required H&P within 30 days of the procedure date
 - Required signed surgical consent
-- LOW/MODERATE risk CBC within 30 days
-- HIGH risk CBC and CMP within 14 days
+- LOW and MODERATE risk procedures require the latest CBC to be within 30 days of the procedure date
+- HIGH risk procedures require both the latest CBC and the latest CMP to be within 14 days of the procedure date
 - Active anticoagulant medication requiring a clear perioperative management plan
 - Acute exclusion for systolic BP >= 180 mmHg
 - Acute exclusion for diastolic BP >= 110 mmHg
@@ -96,9 +96,13 @@ This prevents malformed or free-form agent responses from leaking into final dec
 
 ## Assumptions
 
+- The public function evaluates one patient submission at a time. Batch processing in `run_baseline.py` is just a runner loop over independent submissions.
+- The normal agentic path assumes the free-text documents for one patient fit comfortably in a single OpenAI Agents SDK run. This matches the provided data. For materially larger document bundles, the document extraction step should be extended with chunking, retrieval, or per-document extraction before policy evaluation.
+- The implementation does not assume a fixed number of documents, labs, vitals, or medications. It scans the submitted lists and selects the relevant latest facts.
+- The implementation assumes individual document text fields are plain text strings already extracted from source documents. It does not perform PDF/OCR parsing.
 - Date windows are inclusive: within 30 days means `<= 30` calendar days, and within 14 days means `<= 14` calendar days.
 - Procedure date and procedure risk must come from structured fields. They are not inferred from document text when the structured field is missing.
-- Only the most recent valid result for each required lab type is considered.
+- Only the most recent valid result for each required lab type is considered. Older CBC/CMP results do not make a patient ready if the latest relevant result is outside the required window.
 - Only the latest valid blood pressure and latest valid temperature are considered for acute safety review.
 - Anticoagulant detection is based on a fixed policy-local medication list in `structured_extraction.py`.
 - Unknown active status for an anticoagulant is treated as missing required data.
