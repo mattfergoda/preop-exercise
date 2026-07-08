@@ -4,6 +4,8 @@
 
 `triage_submission(...)` in `core.py` evaluates a single pre-op submission package. The implementation uses the OpenAI Agents SDK for document fact extraction on the normal path, deterministic Python extraction for structured data, and deterministic policy code for the final decision.
 
+See `SUBMISSION.md` for the submission summary, design rationale, assumptions, run instructions, verification results, and reflection.
+
 Your output must match this schema:
 
 - `decision`: `READY | NEEDS_FOLLOW_UP | NOT_CLEARED`
