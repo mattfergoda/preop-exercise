@@ -2,7 +2,7 @@
 
 ## Objective
 
-Implement `triage_submission(...)` in `core.py` - it is a pre-op triage function for a single submission package. It is currently a naive LLM-based solution that makes a real model API call. The starter implementation intentionally does not follow some best practices in using the OpenAI API. You may use whatever file structure makes sense for your solution.
+`triage_submission(...)` in `core.py` evaluates a single pre-op submission package. The implementation uses the OpenAI Agents SDK for document fact extraction on the normal path, deterministic Python extraction for structured data, and deterministic policy code for the final decision.
 
 Your output must match this schema:
 
@@ -37,6 +37,18 @@ uv --version
 export OPENAI_API_KEY="<your_api_key>"
 ```
 
+You can also keep the key in `.env` and run commands through `uv`'s built-in env-file support:
+
+```bash
+uv run --env-file .env run_baseline.py
+```
+
+Offline mode is available for tests and local debugging only. It skips the OpenAI Agents SDK document extraction path and uses deterministic regex fallback extraction:
+
+```bash
+TRIAGE_OFFLINE=1 make baseline
+```
+
 ## Recommended Workflow
 
 1. Implement `triage_submission` in `core.py`.
@@ -44,6 +56,18 @@ export OPENAI_API_KEY="<your_api_key>"
 
 ```bash
 make baseline
+```
+
+To load environment variables from `.env`, use:
+
+```bash
+make baseline-env
+```
+
+To run the deterministic offline fallback baseline, use:
+
+```bash
+make baseline-offline
 ```
 
 3. Run eval scoring:

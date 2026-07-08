@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, Field
@@ -211,41 +212,18 @@ def triage_submission(
     *,
     model: str,
 ) -> TriageOutput:
-    """Naive baseline implementation: single LLM call with JSON response output."""
+    """Evaluate one pre-op submission with agentic extraction and deterministic policy."""
 
-    # Import lazily so core utilities remain usable without OpenAI installed.
-    from openai import OpenAI
+    from document_extraction import extract_document_facts
+    from policy import evaluate_policy
+    from structured_extraction import extract_structured_facts
 
     if isinstance(submission, PatientSubmission):
-        submission_payload = submission.model_dump()
+        patient_submission = submission
     else:
-        submission_payload = PatientSubmission.model_validate(submission).model_dump()
+        patient_submission = PatientSubmission.model_validate(submission)
 
-    client = OpenAI()
-    request_kwargs: dict[str, object] = {
-        "model": model,
-        "instructions": BASELINE_SYSTEM_PROMPT,
-        "input": [
-            {
-                "type": "message",
-                "role": "user",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": build_user_prompt(submission_payload),
-                    }
-                ],
-            }
-        ],
-        "text": {
-            "format": {
-                "type": "json_schema",
-                "name": "preop_triage_output",
-                "schema": triage_output_json_schema(),
-                "strict": False,
-            }
-        },
-    }
-
-    response = client.responses.create(**request_kwargs)
-    return TriageOutput.model_validate_json(response.output_text)
+    offline = os.getenv("TRIAGE_OFFLINE") == "1"
+    structured = extract_structured_facts(patient_submission)
+    documents = extract_document_facts(patient_submission, model=model, offline=offline)
+    return evaluate_policy(patient_submission, structured, documents)

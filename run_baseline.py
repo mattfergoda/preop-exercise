@@ -3,6 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = [
 #   "openai>=2.0.0",
+#   "openai-agents",
 #   "pydantic>=2.8.0",
 # ]
 # ///
