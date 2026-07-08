@@ -176,7 +176,7 @@ Current local verification:
 - Evidence grounding: 100%
 - Failed records: 0
 
-Generated reports:
+Verification generated these local reports. They are intentionally ignored by git and are not required in the submission archive because the summarized results are recorded above:
 
 - `data/eval_report.json`
 - `data/determinism_report.json`
